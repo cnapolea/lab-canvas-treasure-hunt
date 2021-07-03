@@ -1,51 +1,136 @@
+// jshint esversion: 10
 // main.js
-const canvas = document.querySelector('canvas');
-const context = canvas.getContext('2d');
 
-const width = canvas.width;
-const height = canvas.height;
-const squareSize = width / 10;
-
-// Iteration 1
-function drawGrid() {
-  // TODO: write the code of the function
-  context.save();
-
-  context.beginPath();
-  context.strokeStyle = '#000';
-
-  function drawSquare(sideSize) {
-    context.moveTo(0, 0);
-    context.lineTo(sideSize, 0);
-
-    context.moveTo(0, 0);
-    context.lineTo(0, sideSize);
-
-    context.moveTo(0, sideSize);
-    context.lineTo(sideSize, sideSize);
-
-    context.moveTo(sideSize, sideSize);
-    context.lineTo(sideSize, 0);
-
-    context.stroke();
-
-    context.translate(sideSize, 0);
+class Game {
+  constructor() {
+    this.canvas = document.querySelector('canvas');
+    this.context = this.canvas.getContext('2d');
+    this.width = this.canvas.width;
+    this.height = this.canvas.height;
+    this.squareSize = this.canvas.width / 10;
+    this.player = new Character(0, 0, this);
+    this.treasure = new Treasure(this);
+    this.score = 0;
   }
 
-  for (let row = 0; row < 10; row++) {
-    for (let column = 0; column < 10; column++) {
-      drawSquare(squareSize);
+  refresh() {
+    this.context.clearRect(0, 0, this.width, this.height);
+    this.drawGrid();
+    this.drawPlayer();
+    this.drawTreasure(this.treasure);
+  }
+
+  drawSquare(squareSize) {
+    const ctx = this.context;
+    ctx.moveTo(0, 0);
+    ctx.lineTo(squareSize, 0);
+
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, squareSize);
+
+    ctx.moveTo(0, squareSize);
+    ctx.lineTo(squareSize, squareSize);
+
+    ctx.moveTo(squareSize, squareSize);
+    ctx.lineTo(squareSize, 0);
+
+    ctx.stroke();
+  }
+
+  drawGrid() {
+    const ctx = this.context;
+
+    this.context.save();
+    this.context.strokeStyle = '#000';
+
+    ctx.beginPath();
+
+    for (let row = 0; row < 11; row++) {
+      for (let column = 0; column < 11; column++) {
+        this.drawSquare(this.squareSize);
+        ctx.translate(this.squareSize, 0);
+      }
+
+      ctx.restore();
+      ctx.save();
+
+      ctx.translate(0, this.squareSize * row);
     }
-    context.restore();
-    context.save();
-    context.translate(0, squareSize * row);
+
+    ctx.restore();
+  }
+
+  drawPlayer() {
+    const ctx = this.context;
+    const warriorImage = new Image();
+    warriorImage.src = './images/character-down.png';
+
+    warriorImage.addEventListener('load', () => {
+      ctx.drawImage(warriorImage, this.player.col, this.player.row);
+    });
+  }
+
+  drawTreasure(treasure) {
+    const ctx = this.context;
+
+    const treasureImg = new Image();
+    treasureImg.src = 'images/treasure.png';
+
+    treasureImg.addEventListener('load', () => {
+      ctx.drawImage(
+        treasureImg,
+        treasure.col,
+        treasure.row,
+        this.squareSize,
+        this.squareSize
+      );
+    });
+  }
+
+  isCollision() {
+    return this.player.col === this.treasure.col &&
+      this.player.row === this.treasure.row
+      ? true
+      : false;
   }
 }
 
-function drawEverything() {
-  drawGrid();
-  // drawPlayer()
-  // drawTreasure()
-}
+const newGame = new Game();
 
-drawEverything();
+window.addEventListener('load', () => {
+  newGame.refresh();
+  addEventListener('keydown', (e) => {
+    if (!newGame.isCollision()) {
+      newGame.refresh();
+      switch (e.key) {
+        case 'ArrowDown':
+          if (newGame.player.row < newGame.height - newGame.squareSize) {
+            newGame.player.moveDown();
+            break;
+          }
+          break;
+        case 'ArrowUp':
+          if (newGame.player.row > 0) {
+            newGame.player.moveUp();
+            break;
+          }
+          break;
+        case 'ArrowRight':
+          if (newGame.player.col < newGame.width - newGame.squareSize) {
+            newGame.player.moveRight();
+            break;
+          }
+          break;
+        case 'ArrowLeft':
+          if (newGame.player.col > 0) {
+            newGame.player.moveLeft();
+            break;
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+  });
+});
