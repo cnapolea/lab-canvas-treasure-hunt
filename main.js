@@ -1,6 +1,12 @@
 // jshint esversion: 10
 // main.js
 
+function randomNumberGenerator(gameObject) {
+  let randomNumber = Math.floor(Math.random() * 10) * gameObject.squareSize;
+
+  return randomNumber === 0 ? randomNumberGenerator(gameObject) : randomNumber;
+}
+
 class Game {
   constructor() {
     this.canvas = document.querySelector('canvas');
@@ -22,8 +28,8 @@ class Game {
 
   restart() {
     this.refresh();
-    this.treasure.col = Math.floor(Math.random() * 10) * this.squareSize;
-    this.treasure.row = Math.floor(Math.random() * 10) * this.squareSize;
+    this.treasure.col = randomNumberGenerator(this);
+    this.treasure.row = randomNumberGenerator(this);
   }
 
   drawSquare(squareSize) {
