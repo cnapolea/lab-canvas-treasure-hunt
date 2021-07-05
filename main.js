@@ -17,7 +17,13 @@ class Game {
     this.context.clearRect(0, 0, this.width, this.height);
     this.drawGrid();
     this.drawPlayer();
-    this.drawTreasure(this.treasure);
+    this.drawTreasure();
+  }
+
+  restart() {
+    this.refresh();
+    this.treasure.col = Math.floor(Math.random() * 10) * this.squareSize;
+    this.treasure.row = Math.floor(Math.random() * 10) * this.squareSize;
   }
 
   drawSquare(squareSize) {
@@ -70,7 +76,7 @@ class Game {
     });
   }
 
-  drawTreasure(treasure) {
+  drawTreasure() {
     const ctx = this.context;
 
     const treasureImg = new Image();
@@ -79,8 +85,8 @@ class Game {
     treasureImg.addEventListener('load', () => {
       ctx.drawImage(
         treasureImg,
-        treasure.col,
-        treasure.row,
+        this.treasure.col,
+        this.treasure.row,
         this.squareSize,
         this.squareSize
       );
@@ -100,7 +106,12 @@ const newGame = new Game();
 window.addEventListener('load', () => {
   newGame.refresh();
   addEventListener('keydown', (e) => {
-    if (!newGame.isCollision()) {
+    if (newGame.isCollision()) {
+      newGame.restart();
+      alert(`I got it!! \n
+      Score: ${newGame.score}`);
+      newGame.score++;
+    } else {
       newGame.refresh();
       switch (e.key) {
         case 'ArrowDown':
